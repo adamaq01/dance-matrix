@@ -25,6 +25,8 @@ Its main purpose is to replace the simple LEDs in an original pad with square LE
 
 - Install PlatformIO and the Teensy 4.1 platform (see [PlatformIO docs](https://docs.platformio.org/en/latest/core/installation.html))
 - Clone this repository
+- Run `git submodule update --init --recursive` to fetch the SmartMatrix library
+- Copy the files inside `toolchain-fixes` to the `~/.platformio/packages/toolchain-gccarmnoneabi/arm-none-abi/lib` directory
 - Run `pio run` in the project's root directory
 - Firmware is located in `.pio/build/teensy41/firmware.hex`
 
