@@ -1,0 +1,3 @@
+[submodule "lib/SmartMatrix"]
+	path = lib/SmartMatrix
+	url = https://github.com/pixelmatix/SmartMatrix/
