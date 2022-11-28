@@ -1,9 +1,10 @@
+#include <vector>
 #include <Arduino.h>
-#include "bitmap.h"
+#include "animation.h"
 #include "display.h"
 #include "sd.h"
 
-void serial_init() {
+void initSerial() {
     Serial.begin(9600);
 
     // Wait for USB Serial
@@ -14,8 +15,55 @@ void serial_init() {
     Serial.println(F("Serial ready"));
 }
 
+SdFs sd;
+bool sdPresent = false;
+
+void initSd() {
+    // Initialize the SD.
+    if (!sd.begin(SD_CONFIG)) {
+        Serial.println(F("SD not present"));
+        sdPresent = false;
+        return;
+    }
+
+    sdPresent = true;
+    Serial.println(F("Initialized SD"));
+}
+
+std::vector<Animation> animations;
+
+void findAnimations(FsFile dir) {
+    while (true) {
+        FsFile entry = dir.openNextFile();
+        if (!entry)
+            break;
+        if (entry.isDirectory())
+            continue;
+        if (auto animation = Animation::FromFile(entry)) {
+            animation->printInfos();
+            animations.push_back(std::move(*animation));
+        } else {
+            entry.close();
+        }
+    }
+}
+
 void setup() {
-    serial_init();
+    initSerial();
+    initSd();
+
+    if (sdPresent) {
+        FsFile animationsDir = sd.open("animations/");
+        while (true) {
+            FsFile entry = animationsDir.openNextFile();
+            if (!entry)
+                break;
+            if (entry.isDirectory())
+                findAnimations(entry);
+            entry.close();
+        }
+        animationsDir.close();
+    }
 
     getMatrix().addLayer(&getBackgroundLayer());
     getMatrix().begin();
@@ -25,10 +73,11 @@ void setup() {
     getBackgroundLayer().fillScreen({ 0, 0, 0 });
 }
 
-#include "pump_anim.cpp"
-
 void loop() {
-    uint16_t x = (kMatrixWidth / 2) - (pumparrow_anim.width / 2);
-    uint16_t y = (kMatrixHeight / 2) - (pumparrow_anim.height / 2);
-    bitmap_animation_draw(x, y, &pumparrow_anim);
+    uint32_t time = millis();
+    for (auto &item : animations) {
+        if (item.tick(time)) {
+            item.draw(0, 0);
+        }
+    }
 }
