@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <vector>
 #include "sd.h"
 
 enum BytesPerPixel {
@@ -36,6 +37,21 @@ private:
     uint16_t frame_delay{};
     uint16_t frame{};
     uint32_t last_frame_time{};
+};
+
+class AnimationPack {
+public:
+    static std::optional<AnimationPack> FromDir(FsFile dir);
+    AnimationPack() = default;
+    void addAnimation(Animation &animation);
+    void update(uint32_t time);
+    void printInfos() const;
+    [[nodiscard]] const char *getName() const;
+    ~AnimationPack() = default;
+
+private:
+    char name[32]{};
+    std::vector<Animation> animations;
 };
 
 #endif /* ! DANCE_MATRIX_ANIMATION_H */

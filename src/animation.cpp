@@ -106,3 +106,55 @@ void Animation::printInfos() const {
     Serial.print(F("- Frame delay: "));
     Serial.println(frame_delay);
 }
+
+std::optional<AnimationPack> AnimationPack::FromDir(FsFile dir) {
+    if (!dir.isDir()) {
+        Serial.println(F("Not a directory"));
+        return {};
+    }
+
+    AnimationPack pack;
+    dir.getName(pack.name, 32);
+
+    FsFile file = dir.openNextFile();
+    while (file) {
+        if (file.isDirectory()) {
+            file.close();
+            continue;
+        }
+
+        if (auto animation = Animation::FromFile(file)) {
+            pack.addAnimation(*animation);
+        } else {
+            file.close();
+        }
+
+        file = dir.openNextFile();
+    }
+
+    return pack;
+}
+
+void AnimationPack::addAnimation(Animation &animation) {
+    animations.push_back(std::move(animation));
+}
+
+void AnimationPack::update(uint32_t time) {
+    for (auto &animation : animations) {
+        if (animation.tick(time)) { // If animation is finished or running
+            animation.draw(0, 0);
+        }
+    }
+}
+
+void AnimationPack::printInfos() const {
+    Serial.print(F("Animation pack: "));
+    Serial.println(name);
+    for (auto &animation : animations) {
+        animation.printInfos();
+    }
+}
+
+const char *AnimationPack::getName() const {
+    return name;
+}
