@@ -5,7 +5,7 @@
 #include <string>
 #include "display.h"
 
-bool Animation::tick(uint32_t time) {
+AnimationStatus Animation::tick(uint32_t time) {
     if (frame_count <= 1)
         return FINISHED;
 
@@ -88,9 +88,9 @@ std::optional<Animation> Animation::FromFile(FsFile file) {
     return animation;
 }
 
-void Animation::printInfos() {
+void Animation::printInfos() const {
     char buf[32] = { 0 };
-    file.getName(buf, 32);
+    const_cast<FsFile &>(file).getName(buf, 32);
     Serial.print(F("Animation: "));
     Serial.println(buf);
     Serial.print(F("- Button: "));

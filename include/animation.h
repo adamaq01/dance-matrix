@@ -21,9 +21,10 @@ enum AnimationStatus {
 class Animation {
 public:
     static std::optional<Animation> FromFile(FsFile file);
-    bool tick(uint32_t time);
+    AnimationStatus tick(uint32_t time);
     void draw(uint16_t x, uint16_t y);
-    void printInfos();
+    void printInfos() const;
+    ~Animation() = default;
 
 private:
     FsFile file;
