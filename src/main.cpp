@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "animation.h"
+#include "commands.h"
 #include "context.h"
 #include "display.h"
 #include "sd.h"
@@ -46,5 +47,13 @@ void setup() {
 
 void loop() {
     uint32_t time = millis();
+
+    if (Serial.available()) {
+        auto command = static_cast<Command>(Serial.read());
+        char args[64];
+        size_t len = Serial.readBytesUntil('\n', args, 64);
+        handleCommand(context, command, args, len);
+    }
+
     context.update(time);
 }
